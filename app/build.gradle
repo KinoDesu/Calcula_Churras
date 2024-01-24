@@ -3,6 +3,14 @@ plugins {
 }
 
 android {
+    signingConfigs {
+        debug {
+            storeFile file('C:\\Users\\leofu\\Documents\\Key Store\\keystore1.jks')
+            storePassword 'Leo.noboru'
+            keyAlias 'key0'
+            keyPassword 'Leo.noboru'
+        }
+    }
     namespace 'com.example.calculachurras'
     compileSdk 33
 

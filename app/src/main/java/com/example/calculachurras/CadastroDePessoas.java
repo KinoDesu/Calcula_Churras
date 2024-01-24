@@ -4,6 +4,8 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -14,8 +16,10 @@ import com.example.calculachurras.calcApplication.Repository.PessoaRepository;
 import com.example.calculachurras.calcApplication.models.Pessoa;
 
 import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 public class CadastroDePessoas extends AppCompatActivity {
 
@@ -32,6 +36,8 @@ public class CadastroDePessoas extends AppCompatActivity {
     private List<Pessoa> listaPessoas = new ArrayList<>();
     private double infoValorCada = 0;
     private double infoTotalChurras = 0;
+    private String ultimoCaracterDigitado = "";
+
 
     private DecimalFormat df = new DecimalFormat("0.00");
 
@@ -56,6 +62,45 @@ public class CadastroDePessoas extends AppCompatActivity {
         totalChurras.setText(totalChurras.getText().toString() + df.format(infoTotalChurras));
         totalPessoas.setText(totalPessoas.getText().toString() + String.valueOf(listaPessoas.size()) + " pessoas");
         valorCada.setText(valorCada.getText().toString() + df.format(infoValorCada));
+
+        valorGasto.addTextChangedListener(new TextWatcher() {
+            public void afterTextChanged(Editable s) {
+                String text = valorGasto.getText().toString();
+
+                // Remover qualquer vírgula existente
+                text = text.replace(",", "");
+                text = text.replace("R$ ", "");
+
+                if (text.length() > 0 && text.charAt(0) == '0') {
+                    text = text.substring(1);
+                }
+
+                // Adicionar vírgula antes dos dois últimos dígitos
+                int length = text.length();
+                if (length > 2) {
+                    text = "R$ " + text.substring(0, length - 2) + "," + text.substring(length - 2);
+                } else {
+                    // Caso tenha menos de dois dígitos, adicione a vírgula no início
+                    text = "R$ " + "," + text;
+                }
+                // Atualizar o texto do EditText
+                valorGasto.removeTextChangedListener(this);
+                valorGasto.setText(text);
+
+
+                // Mover o cursor para o final
+                int selectionIndex = text.length();
+                valorGasto.setSelection(selectionIndex);
+
+                valorGasto.addTextChangedListener(this);
+            }
+
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+            }
+        });
     }
 
     private void getValorChurras() {
@@ -74,7 +119,12 @@ public class CadastroDePessoas extends AppCompatActivity {
 
         if (nomePessoa.getText().toString().trim().length() != 0 && valorGasto.getText().toString().trim().length() != 0) {
             String nome = nomePessoa.getText().toString();
-            double gasto = Double.parseDouble(valorGasto.getText().toString());
+            double gasto = Double.parseDouble(
+                    String.valueOf(
+                            getDoubleString(valorGasto.getText().toString()
+                            )
+                    )
+            );
 
             Pessoa pessoa = new Pessoa(nome, gasto);
             repository.adicionarPessoa(pessoa);
@@ -96,13 +146,27 @@ public class CadastroDePessoas extends AppCompatActivity {
         }
     }
 
+    private String getDoubleString(String texto){
+        texto = texto.replace("R$ ","");
+        texto = texto.replace(",",".");
+
+        valorCada.setText(texto);
+
+        return texto;
+    }
+
     public void finalizarCadastros(View view) {
 
         if (listaPessoas.size() >= 2 || (listaPessoas.size() >= 1 && nomePessoa.getText().toString().trim().length() != 0 && valorGasto.getText().toString().trim().length() != 0)) {
 
             if (nomePessoa.getText().toString().trim().length() != 0 && valorGasto.getText().toString().trim().length() != 0) {
                 String nome = nomePessoa.getText().toString();
-                double gasto = Double.parseDouble(valorGasto.getText().toString());
+                double gasto = Double.parseDouble(
+                        String.valueOf(
+                                getDoubleString(valorGasto.getText().toString()
+                                )
+                        )
+                );
 
                 Pessoa pessoa = new Pessoa(nome, gasto);
                 repository.adicionarPessoa(pessoa);

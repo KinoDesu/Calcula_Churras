@@ -108,6 +108,7 @@
         android:backgroundTint="#959595"
         android:ems="10"
         android:hint="Valor gasto"
+        android:text="R$ 0,00"
         android:inputType="numberDecimal"
         android:minHeight="48dp"
         android:textAllCaps="true"
